@@ -50,22 +50,59 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
 
-  def tail[A](l: List[A]): List[A] = l match {
+  def tail[A](l: List[A]): List[A] = drop(l, 1)
+
+  def setHead[A](l: List[A], h: A): List[A] = l match {
     case Nil => l // or throw error
-    case Cons(x, xs) => xs
+    case Cons(x, xs) => Cons(h, xs)
   }
 
-  def setHead[A](l: List[A], h: A): List[A] = sys.error("todo")
+  def drop[A](l: List[A], n: Int): List[A] = {
+    if (n == 0) l
+    else l match {
+      case Nil => l // or throw error
+      case Cons(x, xs) => drop(xs, n - 1)
+    }
+  }
 
-  def drop[A](l: List[A], n: Int): List[A] = sys.error("todo")
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
+    case Nil => l // or throw error
+    case Cons(x, xs) if f(x) => dropWhile(xs, f)
+    case _ => l
+  }
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = sys.error("todo")
-
-  def init[A](l: List[A]): List[A] = sys.error("todo")
+  def init[A](l: List[A]): List[A] = {
+    def loop(left: List[A], ls: List[A]): List[A] = left match {
+      case Nil => Nil
+      case Cons(x, Nil) => ls
+      case Cons(x, xs) => loop(xs, append(ls, Cons(x, Nil)))
+    }
+    loop(l, Nil)
+  }
 
   def length[A](l: List[A]): Int = sys.error("todo")
 
   def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
 
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+
+}
+
+object Test {
+  def main(args: Array[String]): Unit = {
+    val list = List(1, 2, 3)
+    println("tail: " + List.tail(list))
+
+    println("drop(1): " + List.drop(list, 1))
+    println("drop(2): " + List.drop(list, 2))
+
+    println("dropWhile: " + List.dropWhile[Int](list, _ < 2))
+    println("dropWhile: " + List.dropWhile[Int](list, _ < 3))
+    println("dropWhile: " + List.dropWhile[Int](list, _ < 4))
+
+    println("init: " + List.init(list))
+    println("init: " + List.init(List()))
+    println("init: " + List.init(List(1)))
+    println("init: " + List.init(List(1, 2)))
+  }
 }
