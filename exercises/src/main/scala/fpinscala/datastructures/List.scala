@@ -99,13 +99,12 @@ object List { // `List` companion object. Contains functions for creating and wo
   def foldLeftFR[A,B](l: List[A], z: B)(f: (B, A) => B): B = foldRight(l, z)((x, y) => f(y, x))
   def foldRightFL[A,B](l: List[A], z: B)(f: (A, B) => B): B = foldLeft(l, z)((x, y) => f(y, x))
 
-  def appendFL[A](a1: List[A], a2: List[A]): List[A] = foldLeft(reverse(a1), a2)((x: List[A], y: A) => Cons(y, x))
+  def appendFL[A](a1: List[A], a2: List[A]): List[A] = foldLeft(reverse(a1), a2)((x, y) => Cons(y, x))
   def appendFR[A](a1: List[A], a2: List[A]): List[A] = foldRight(a1, a2)((x, y) => Cons(x, y))
 
   def concat[A](l: List[List[A]]): List[A] = l match {
     case Nil => Nil
-    //case Cons(x, Nil) => x
-    case Cons(x, Cons(y, xs)) => append[A](x, y)
+    case Cons(x, y) => append(x, concat(y))
   }
 
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
@@ -152,7 +151,7 @@ object Test {
     println("appendFR: " + List.appendFR(list, list2))
 
     println("concat: " + List.concat(ll))
-
+    println("concat: " + List.concat(List(Nil, List(1, 2), List(3))))
 
   }
 }
