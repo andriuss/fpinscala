@@ -104,10 +104,56 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def concat[A](l: List[List[A]]): List[A] = l match {
     case Nil => Nil
-    case Cons(x, y) => append(x, concat(y))
+    case Cons(x, xs) => append(x, concat(xs))
   }
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+  def addOne(l: List[Int]): List[Int] = l match {
+    case Nil => Nil
+    case Cons(x, xs) => Cons(x + 1, addOne(xs))
+  }
+
+  def toString(l: List[Double]): List[String] = l match {
+    case Nil => Nil
+    case Cons(x, xs) => Cons(x.toString, toString(xs))
+  }
+
+  def map[A,B](l: List[A])(f: A => B): List[B] = l match {
+    case Nil => Nil
+    case Cons(x, xs) => Cons(f(x), map(xs)(f))
+  }
+
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] = as match {
+    case Nil => Nil
+    case Cons(x, xs) if f(x) => Cons(x, filter(xs)(f))
+    case Cons(_, xs) => filter(xs)(f)
+  }
+
+  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] = as match {
+    case Nil => Nil
+    case Cons(x, xs) => append(f(x), flatMap(xs)(f))
+  }
+
+  def filterFM[A](as: List[A])(f: A => Boolean): List[A] = flatMap(as)(x => if (f(x)) Cons(x, Nil) else Nil)
+
+  def merge(as1: List[Int], as2: List[Int]): List[Int] = (as1, as2) match {
+    case (Nil, Nil) => Nil
+    case (Cons(x, xs), Cons(y, ys)) => Cons(x + y, merge(xs, ys))
+    case (Cons(x, xs), Nil) => Cons(x, xs)
+    case (Nil, Cons(x, xs)) => Cons(x, xs)
+  }
+
+  def zipWith[A](as1: List[A], as2: List[A])(f: (A, A) => A): List[A] = (as1, as2) match {
+    case (Nil, Nil) => Nil
+    case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
+    case (Cons(x, xs), Nil) => Cons(x, xs)
+    case (Nil, Cons(x, xs)) => Cons(x, xs)
+  }
+
+  def zipWith2[A,B,C](as1: List[A], as2: List[B])(f: (A, B) => C): List[C] = (as1, as2) match {
+    case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith2(xs, ys)(f))
+    case _ => Nil
+  }
 
 }
 
@@ -152,6 +198,29 @@ object Test {
 
     println("concat: " + List.concat(ll))
     println("concat: " + List.concat(List(Nil, List(1, 2), List(3))))
+
+    println("addOne: " + List.addOne(list))
+    println("toString: " + List.toString(List(1.0, 2.0, 3.0)))
+    println("map: " + List.map(list)(_ + 2))
+
+    println("filter: " + List.filter(list)(_ == 2))
+    println("filter: " + List.filter(list)(_ > 1))
+    println("filter: " + List.filterFM(list)(_ == 2))
+    println("filter: " + List.filterFM(list)(_ > 1))
+
+    println("flatMap: " + List.flatMap(list)(x => List(x, 5)))
+    println("flatMap: " + List.flatMap(list)(x => Nil))
+    println("flatMap: " + List.flatMap(List(1,2,3))(i => List(i,i)))
+
+    println("merge: " + List.merge(list, list2))
+    println("merge: " + List.merge(list, List(4, 5)))
+    println("merge: " + List.merge(list, Nil))
+    println("merge: " + List.merge(Nil, Nil))
+
+    println("zipWith: " + List.zipWith(list, list2)(_ + _))
+    println("zipWith2: " + List.zipWith2(list, list2)(_ + _))
+    println("zipWith2: " + List.zipWith2(list, List(10,11))(_ + _))
+
 
   }
 }
