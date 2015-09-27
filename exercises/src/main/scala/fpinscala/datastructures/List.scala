@@ -155,6 +155,19 @@ object List { // `List` companion object. Contains functions for creating and wo
     case _ => Nil
   }
 
+  def hasSubsequence[A](as: List[A], sub: List[A]): Boolean = {
+    def hasSequence(ls: List[A], seq: List[A]): Boolean = (ls, seq) match {
+      case (Cons(x, _), Cons(y, Nil)) => x == y
+      case (Cons(_, xs), Cons(_, ys)) => hasSequence(xs, ys)
+      case _ => false
+    }
+    (as, sub) match {
+      case (Cons(x, xs), Cons(y, ys)) if x == y => hasSequence(Cons(x, xs), Cons(y, ys))
+      case (Cons(_, xs), _) => hasSubsequence(xs, sub)
+      case _ => false
+    }
+  }
+
 }
 
 object Test {
@@ -221,6 +234,17 @@ object Test {
     println("zipWith2: " + List.zipWith2(list, list2)(_ + _))
     println("zipWith2: " + List.zipWith2(list, List(10,11))(_ + _))
 
+
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(1,2)))
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(2,3)))
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(4)))
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(3,4)))
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(3)))
+    println()
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(5)))
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(1,2,4)))
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(2,4)))
+    println("hasSubsequence: " + List.hasSubsequence(List(1,2,3,4), List(1,3)))
 
   }
 }
