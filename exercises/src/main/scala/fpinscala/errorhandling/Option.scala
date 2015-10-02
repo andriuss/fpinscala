@@ -14,19 +14,21 @@ sealed trait Option[+A] {
     case _ => default
   }
 
-  def flatMap[B](f: A => Option[B]): Option[B] = this.map(x => f(x)).getOrElse(None)
+  def flatMap[B](f: A => Option[B]): Option[B] =
+    map(f).getOrElse(None)
 
   def orElse[B>:A](ob: => Option[B]): Option[B] = {
-    //val m: Option[B] = this.map(x => x)
-    //val n: Option[B] = m.getOrElse(ob)
-    //n
+/*    val m: Option[Some[A]] = this map (Some(_))
+    m.getOrElse(ob)*/
+
     this match {
       case Some(v) => Some(v)
       case None => ob
     }
   }
 
-  def filter(f: A => Boolean): Option[A] = this.flatMap(x => if (f(x)) Some(x) else None)
+  def filter(f: A => Boolean): Option[A] =
+    flatMap(a => if (f(a)) Some(a) else None)
 }
 case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
@@ -54,13 +56,24 @@ object Option {
     else Some(xs.sum / xs.length)
 
   def variance(xs: Seq[Double]): Option[Double] =
-    mean(xs).flatMap(mm => mean(xs.map(x => math.pow(x - mm, 2))))
+    mean(xs) flatMap (m => mean(xs.map(x => math.pow(x - m, 2))))
 
-  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = sys.error("todo")
+  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    a flatMap(aa => b map(bb => f(aa,bb)))
 
-  def sequence[A](a: List[Option[A]]): Option[List[A]] = sys.error("todo")
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
+    case Some(x) :: xs => sequence(xs) flatMap (ls => Some(x :: ls))
+    case Nil => Some(Nil)
+    case _ => None
+  }
 
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case x :: xs => traverse(xs)(f) flatMap(ls => f(x) map (_ :: ls))
+    case Nil => Some(Nil)
+  }
+
+  def sequence2[A](a: List[Option[A]]): Option[List[A]] =
+    traverse(a)(x => x)
 }
 
 object TestOption {
@@ -93,6 +106,29 @@ object TestOption {
 
     println("variance list: " + variance(list))
     println("variance list: " + variance(List()))
+
+    println("map2: " + map2(Some(1), Some(2))(_ + _))
+    println("map2: " + map2(Some("1"), Some("2"))(_ + _))
+    println("map2: " + map2[Int, Int, Int](Some(1), None)(_ + _))
+
+    println("sequence: " + sequence(List(Some("1"), Some("2"))))
+    println("sequence: " + sequence(List(Some("1"), None, Some("2"))))
+    println("sequence: " + sequence(List(Some("1"))))
+    println("sequence: " + sequence(List(None)))
+    println("sequence: " + sequence(Nil))
+
+    def f(x: String): Option[Int] = if (x == "1" || x == "2") Some(x.toInt) else None
+    println("traverse: " + traverse[String, Int](List("1", "2"))(f))
+    println("traverse: " + traverse[String, Int](List("1", "2", "3"))(f))
+    println("traverse: " + traverse[String, Int](List("1"))(f))
+    println("traverse: " + traverse[String, Int](List())(f))
+    println("traverse: " + traverse[String, Int](List("3"))(f))
+
+    println("sequence2: " + sequence2(List(Some("1"), Some("2"))))
+    println("sequence2: " + sequence2(List(Some("1"), None, Some("2"))))
+    println("sequence2: " + sequence2(List(Some("1"))))
+    println("sequence2: " + sequence2(List(None)))
+    println("sequence2: " + sequence2(Nil))
 
   }
 }
