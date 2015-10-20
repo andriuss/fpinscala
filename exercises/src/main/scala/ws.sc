@@ -35,3 +35,8 @@ xx.map { case (a,b) => println(a + b) }
 val twos: Stream[Int] = 2 #:: twos
 twos.take(3).toList
 
+(Int.MaxValue - 1).toDouble / 1281479697
+
+List(1, 2, 3).foldRight(List[Int]())((x, acc) => x :: acc)
+
+List.fill(3)(5)
