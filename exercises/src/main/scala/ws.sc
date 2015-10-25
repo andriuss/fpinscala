@@ -41,3 +41,5 @@ val ls = List(1,2,3)
 val oo = List(List(1), Nil, List(2,3))
 oo.flatten
 
+
+List(1,2,3).foldRight(10)(_ - _)

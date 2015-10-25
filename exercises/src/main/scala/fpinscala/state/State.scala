@@ -158,10 +158,24 @@ object State {
 
   def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = ???
 
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
-    //input <- inputs
-    //Machine(locked, candies, coins) <- inputs
+  def get[S]: State[S, S] = State(s => (s, s))
+  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+  def modify[S](f: S => S): State[S, Unit] = for {
+    s <- get // Gets the current state and assigns it to `s`.
+    _ <- set(f(s)) // Sets the new state to `f` applied to `s`.
   } yield ()
+
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = State( machine => {
+    def process(m: Machine, i: Input): Machine = (i, m) match {
+      case (_, Machine(_, 0, _))        => m
+      case (Coin, Machine(true, _, _))  => m.copy(locked = false, coins = m.coins + 1)
+      case (Turn, Machine(false, _, _)) => m.copy(locked = true, candies = m.candies - 1)
+      case _                            => m
+    }
+
+    val m: Machine = inputs.foldLeft(machine)(process)
+    ((m.coins, m.candies), m)
+  })
 }
 
 
@@ -200,6 +214,9 @@ object TestState {
     def rollDie: Rand[Int] = nonNegativeLessThan(6)
     println { "rollDie: " + rollDie(Simple(1))._1 }
     println { "rollDie: " + rollDie(rollDie(Simple(5))._2)._1 }
+
+
+    println { "simulateMachine: " + State.simulateMachine(List(Coin, Turn, Coin, Turn)).run(Machine(locked = true, candies = 10, coins = 0))}
 
   }
 }
