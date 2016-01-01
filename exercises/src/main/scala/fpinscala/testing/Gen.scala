@@ -47,8 +47,8 @@ object TestGen {
   def main(args: Array[String]): Unit = {
     def a = new Prop() { override def check: Boolean = true }
     def b = new Prop() { override def check: Boolean = false }
-    println(a && b check)
-    println(a && a check)
+    println((a && b).check)
+    println((a && a).check)
   }
 }
 
