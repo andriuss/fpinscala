@@ -13,15 +13,25 @@ The library developed in this chapter goes through several iterations. This file
 shell, which you can fill in and modify while working through the chapter.
 */
 
-trait Prop {
+trait Prop { ct =>
+  def check: Boolean
+
+  def &&(other: Prop) = new Prop {
+    def check = ct.check && other.check
+  }
 }
 
 object Prop {
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???
 }
 
+case class Gen1[A](sample: State[RNG,A]) {
+  def choose(start: Int, stopExclusive: Int): Gen1[Int] =
+    ???
+}
+
 object Gen {
-  def unit[A](a: => A): Gen[A] = ???
+   def unit[A](a: => A): Gen[A] = ???
 }
 
 trait Gen[A] {
@@ -31,5 +41,14 @@ trait Gen[A] {
 
 trait SGen[+A] {
 
+}
+
+object TestGen {
+  def main(args: Array[String]): Unit = {
+    def a = new Prop() { override def check: Boolean = true }
+    def b = new Prop() { override def check: Boolean = false }
+    println(a && b check)
+    println(a && a check)
+  }
 }
 
